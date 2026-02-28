@@ -80,11 +80,11 @@ release-binary: https
 	@echo "Binary ready: $(TARGET)"
 
 test: $(TARGET)
-	./$(TARGET) --benchmark &
-	sleep 2
-	curl -s http://localhost:8080/ > /dev/null
-	pkill -f "./$(TARGET)"
-	@echo "Tests passed"
+	./$(TARGET) --benchmark & \
+	sleep 2; \
+	curl -s http://localhost:8080/ > /dev/null; \
+	pkill -f "$(TARGET)"; \
+	echo "Tests passed"
 
 valgrind: $(TARGET)
 	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./$(TARGET)
