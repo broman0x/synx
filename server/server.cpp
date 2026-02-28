@@ -165,6 +165,7 @@ void Server::run() {
     if (config_.worker_count > 1 && is_master_) {
         std::cout << "[INFO] Master process starting " << config_.worker_count << " workers" << std::endl;
         
+        std::vector<pid_t> worker_pids;
         for (int i = 0; i < config_.worker_count - 1; i++) {
             pid_t pid = fork();
             if (pid < 0) {
@@ -177,6 +178,8 @@ void Server::run() {
                 signal(SIGINT, worker_signal_handler);
                 run_worker();
                 exit(0);
+            } else {
+                worker_pids.push_back(pid);
             }
         }
         
@@ -193,7 +196,12 @@ void Server::run() {
             usleep(100000);
         }
         
-        kill(0, SIGTERM);
+        for (pid_t p : worker_pids) {
+            kill(p, SIGTERM);
+        }
+        for (pid_t p : worker_pids) {
+            waitpid(p, nullptr, 0);
+        }
     } else {
         running_ = true;
         run_worker();

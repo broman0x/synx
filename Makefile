@@ -81,9 +81,11 @@ release-binary: https
 
 test: $(TARGET)
 	./$(TARGET) --benchmark & \
+	PID=$$!; \
 	sleep 2; \
 	curl -s http://localhost:8080/ > /dev/null; \
-	pkill -f "$(TARGET)"; \
+	kill $$PID || true; \
+	wait $$PID || true; \
 	echo "Tests passed"
 
 valgrind: $(TARGET)
