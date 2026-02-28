@@ -29,11 +29,13 @@ jobs:
     - name: Run tests
       run: |
         ./build/synx &
+        PID=$!
         sleep 2
         curl -s http://localhost:8080/ > /dev/null
         curl -s http://localhost:8080/style.css > /dev/null
         curl -s http://localhost:8080/nonexistent > /dev/null
-        pkill -f "./build/synx"
+        kill $PID || true
+        wait $PID || true
 
     - name: Memory leak check
       run: |
