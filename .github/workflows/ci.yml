@@ -8,6 +8,11 @@ on:
   release:
     types: [published]
   workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release Tag (contoh: v0.1.0)'
+        required: true
+        type: string
 
 jobs:
   build:
@@ -134,7 +139,8 @@ jobs:
     - name: Create release archives
       run: |
         if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-          VERSION="manual-$(git rev-parse --short HEAD)"
+          RAW_VERSION="${{ github.event.inputs.tag }}"
+          VERSION=${RAW_VERSION#v}
         else
           VERSION=${GITHUB_REF#refs/tags/v}
         fi
@@ -154,6 +160,8 @@ jobs:
     - name: Upload release assets
       uses: softprops/action-gh-release@v1
       with:
+        tag_name: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || github.ref_name }}
+        name: Release ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || github.ref_name }}
         files: |
           synx-*-linux-x86_64.tar.gz
           synx-*-linux-x86_64.tar.gz.sha256
